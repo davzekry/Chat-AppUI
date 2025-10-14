@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatService } from './../../services/chat.service';
-import { User } from './../../interfaces/chat.interface';
+import { ChatService } from './../../../services/chat.service';
+import { User } from './../../../interfaces/chat.interface';
 
 @Component({
   selector: 'app-users-list',

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, Input, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatService } from './../../services/chat.service';
-import { Room } from './../../interfaces/chat.interface';
+import { ChatService } from './../../../services/chat.service';
+import { Room } from './../../../interfaces/chat.interface';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
