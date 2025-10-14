@@ -24,7 +24,7 @@ export class HomeComponent implements OnInit {
   newMessageText: string = '';
 
   ngOnInit(): void {
-    this.currentUserId = this.authService.getLoggedInUserId();
+    this.currentUserId = this.authService.getCurrentUserId();
   }
 
   onRoomSelected(room: Room): void {
@@ -35,7 +35,6 @@ export class HomeComponent implements OnInit {
     const privateRoom: Room = {
       roomId: `private-${this.currentUserId}-${user.id}`,
       roomName: user.name,
-      isPrivate: true
     };
     this.selectedRoom = privateRoom;
   }

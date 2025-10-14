@@ -1,6 +1,6 @@
 <div class="home-container">
   <div class="rooms-container">
-    <app-rooms-list [selectedRoomId]="selectedRoom?.roomId" (roomSelected)="onRoomSelected($event)"></app-rooms-list>
+    <app-rooms-list [selectedRoomId]="selectedRoom?.roomId ?? null" (roomSelected)="onRoomSelected($event)"></app-rooms-list>
   </div>
 
   <div class="chat-container">
