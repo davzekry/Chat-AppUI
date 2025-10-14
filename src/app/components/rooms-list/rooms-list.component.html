@@ -1,0 +1,24 @@
+<!-- src/app/components/home/rooms-list/rooms-list.component.html -->
+<div class="rooms-list-container">
+  <div *ngIf="rooms.length === 0" class="no-rooms-message">
+    No rooms found. Start a chat from the 'Users' list!
+  </div>
+
+  <div
+    *ngFor="let room of rooms"
+    class="room-item"
+    [class.active]="room.id === selectedRoomId"
+    (click)="selectRoom(room)"
+  >
+    <img [src]="getRoomDisplayImage(room)" alt="Room Image" class="room-image" />
+    <div class="room-details">
+      <div class="room-name">{{ getRoomDisplayName(room) }}</div>
+      <div *ngIf="room.lastMessage" class="last-message">
+        {{ room.lastMessage | slice: 0:30 }}...
+      </div>
+      <div *ngIf="room.lastMessageTimestamp" class="message-time">
+        {{ room.lastMessageTimestamp | date: 'shortTime' }}
+      </div>
+    </div>
+  </div>
+</div>

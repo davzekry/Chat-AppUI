@@ -1,0 +1,94 @@
+/* src/app/components/home/home.component.scss */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-header {
+  background-color: #3f51b5;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0;
+    font-size: 1.8em;
+  }
+
+  button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+
+    &:hover {
+      background-color: #d32f2f;
+    }
+  }
+}
+
+.chat-layout {
+  display: flex;
+  flex: 1; /* Takes remaining height */
+  overflow: hidden; /* Prevent inner scrollbars from affecting layout */
+}
+
+.sidebar {
+  width: 280px;
+  background-color: #f0f2f5;
+  padding: 15px;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto; /* Enable scrolling for lists of rooms/users */
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.4em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+  }
+}
+
+.chat-main {
+  flex: 1; /* Takes up most of the space */
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  position: relative;
+  overflow: hidden; /* Let messages component handle its own scroll */
+
+  .room-title {
+    margin: 0;
+    padding: 15px 20px;
+    background-color: #e0e0e0;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.5em;
+    color: #333;
+    text-align: center;
+  }
+
+  .select-room-message {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #777;
+    font-size: 1.2em;
+  }
+}
+
+.right-sidebar {
+  border-right: none;
+  border-left: 1px solid #e0e0e0;
+}

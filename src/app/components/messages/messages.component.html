@@ -1,0 +1,50 @@
+<!-- src/app/components/home/messages/messages.component.html -->
+<div class="messages-container">
+  <div #messagesContainer class="messages-list">
+    <div *ngIf="messages.length === 0" class="no-messages">
+      No messages yet. Say hello!
+    </div>
+
+    <div
+      *ngFor="let message of messages"
+      class="message-item"
+      [class.my-message]="isMyMessage(message)"
+      [class.other-message]="!isMyMessage(message)"
+    >
+      <img
+        [src]="getMessageImage(message)"
+        alt="Sender Image"
+        class="message-sender-image"
+        *ngIf="!isMyMessage(message)"
+      />
+      <div class="message-content-wrapper">
+        <div class="message-sender-name" *ngIf="!isMyMessage(message)">
+          {{ message.senderUserName }}
+        </div>
+        <div class="message-bubble">{{ message.content }}</div>
+        <div class="message-timestamp">
+          {{ message.timestamp | date: 'shortTime' }}
+        </div>
+      </div>
+      <img
+        [src]="getMessageImage(message)"
+        alt="Sender Image"
+        class="message-sender-image"
+        *ngIf="isMyMessage(message)"
+      />
+    </div>
+  </div>
+
+  <div class="message-input-area">
+    <input
+      type="text"
+      [(ngModel)]="newMessageContent"
+      (keydown.enter)="sendMessage()"
+      placeholder="Type a message..."
+      [maxLength]="messageLengthLimit"
+    />
+    <button (click)="sendMessage()" [disabled]="!newMessageContent.trim()">
+      Send
+    </button>
+  </div>
+</div><p>messages.component works!</p>
