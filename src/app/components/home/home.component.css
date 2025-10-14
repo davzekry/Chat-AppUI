@@ -1,106 +1,48 @@
-/* src/app/components/home/home.component.css */
+.home-container {
+  display: flex;
+  height: 100vh;
+}
+
+.rooms-container {
+  width: 20%;
+  border-right: 1px solid #ccc;
+}
 
 .chat-container {
+  width: 60%;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  font-family: Arial, sans-serif;
-  background-color: #f0f2f5; /* Light background */
 }
 
-.chat-header {
+.messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.message-input-container {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background-color: #007bff; /* Primary blue for header */
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  min-height: 60px;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
 }
 
-.user-info .user-name {
-  font-size: 1.1em;
-  font-weight: bold;
+.message-input-container input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  border-radius: 5px;
 }
 
-.logout-button {
-  background-color: #dc3545; /* Red for logout */
-  color: white;
+.message-input-container button {
+  margin-left: 1rem;
+  padding: 0.5rem 1rem;
   border: none;
-  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 0.9em;
-  transition: background-color 0.2s ease;
 }
 
-.logout-button:hover {
-  background-color: #c82333;
-}
-
-.chat-main {
-  display: flex;
-  flex: 1; /* Takes remaining height */
-  overflow: hidden; /* Hide scrollbars on main container */
-}
-
-.left-panel,
-.right-panel {
-  flex: 0 0 250px; /* Fixed width for side panels */
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-  overflow-y: auto; /* Allow scrolling for lists */
-}
-
-.right-panel {
-  border-right: none;
-  border-left: 1px solid #e0e0e0;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
-}
-
-.center-panel {
-  flex: 1; /* Takes all available space in the middle */
-  display: flex;
-  flex-direction: column;
-  background-color: #e9ecef; /* Slightly darker background for message area */
-}
-
-.left-panel h2,
-.right-panel h2,
-.messages-header h2 {
-  font-size: 1.3em;
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.messages-header {
-  padding: 15px 20px;
-  background-color: #f8f9fa; /* Lighter background for message header */
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  min-height: 60px;
-}
-
-/* Flexbox for Rooms/Users/Messages list to ensure they fill their panels */
-app-rooms-list,
-app-users-list,
-app-messages {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-/* Optional: Add some padding to the main sections if needed */
-.left-panel > *,
-.right-panel > * {
-  padding: 0; /* Components will manage their own internal padding */
+.users-container {
+  width: 20%;
+  border-left: 1px solid #ccc;
 }
