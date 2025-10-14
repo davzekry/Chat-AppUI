@@ -15,8 +15,6 @@ export interface Room {
   imagePath: string | null; // Can be null for private chats
   roomType: 0 | 1; // 0: Private, 1: Group
   lastMessageAt?: string; // Date string
-  // Backend needs to provide other participant's info for private chats here.
-  // For now, we'll try to infer or use placeholders.
   otherParticipant?: { // Assuming backend might add this eventually
     userId: string;
     userName: string;
@@ -67,8 +65,8 @@ export interface Message {
 
 // GetAllUsers API response structure
 export interface GetAllUsersResponseData {
-  items: User[] | null; // This appears to be null based on your example
-  data: User[];       // This is where your actual user array is
+  items: User[] | null;
+  data: User[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;
@@ -78,9 +76,9 @@ export interface GetAllUsersResponseData {
   hasPreviousPage: boolean;
 }
 
-// GetAllMessagesByRoomId API response structure
-export interface GetAllMessagesByRoomIdResponseData {
-  messages: Message[]; // Array of Message objects as per your backend response
+// Structure for paginated messages response
+export interface PaginatedMessages {
+  messages: Message[];
   totalCount: number;
   hasMore: boolean;
 }
