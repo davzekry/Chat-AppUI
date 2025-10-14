@@ -1,39 +1,19 @@
-<div class="chat-container">
-  <!-- Header with User Info and Logout -->
-  <header class="chat-header">
-    <div class="user-info">
-      <span class="user-name">Welcome, {{ currentUserName || 'Guest' }}</span>
+<div class="home-container">
+  <div class="rooms-container">
+    <app-rooms-list [selectedRoomId]="selectedRoom?.roomId" (roomSelected)="onRoomSelected($event)"></app-rooms-list>
+  </div>
+
+  <div class="chat-container">
+    <div class="messages-container">
+      <app-messages-list [roomId]="selectedRoom?.roomId"></app-messages-list>
     </div>
-    <button class="logout-button" (click)="logout()">Logout</button>
-  </header>
+    <div class="message-input-container">
+      <input type="text" [(ngModel)]="newMessageText" (keyup.enter)="sendMessage()" placeholder="Type a message...">
+      <button (click)="sendMessage()">Send</button>
+    </div>
+  </div>
 
-  <main class="chat-main">
-    <!-- Left Panel: Rooms List -->
-    <section class="left-panel">
-      <h2>Rooms</h2>
-      <app-rooms-list
-        [selectedRoomId]="selectedRoomId"
-        (roomSelected)="onRoomSelected($event)"
-      ></app-rooms-list>
-    </section>
-
-    <!-- Center Panel: Messages -->
-    <section class="center-panel">
-      <div class="messages-header">
-        <h2>{{ selectedRoomName || 'Select a Room' }}</h2>
-      </div>
-      <app-messages
-        [roomId]="selectedRoomId"
-        [currentUserId]="currentUserId"
-      ></app-messages>
-    </section>
-
-    <!-- Right Panel: Users List -->
-    <section class="right-panel">
-      <h2>Users</h2>
-      <app-users-list
-        (userSelected)="onUserSelected($event)"
-      ></app-users-list>
-    </section>
-  </main>
+  <div class="users-container">
+    <app-users-list (userSelected)="onUserSelected($event)"></app-users-list>
+  </div>
 </div>
