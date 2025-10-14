@@ -1,0 +1,66 @@
+/* src/app/components/rooms-list/rooms-list.component.css */
+
+.rooms-list-container {
+  flex: 1; /* Occupy remaining space in its parent */
+  overflow-y: auto; /* Enable scrolling if rooms exceed height */
+  padding-right: 5px; /* Space for scrollbar */
+}
+
+.no-rooms-message {
+  padding: 15px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px; /* Slightly rounded corners */
+  margin-bottom: 5px;
+}
+
+.room-item:hover {
+  background-color: #f0f2f5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.room-item.selected {
+  background-color: #e0f2fe; /* Light blue for selected item */
+  border-left: 4px solid #007bff; /* Highlight border */
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.room-image {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%; /* Circular images */
+  object-fit: cover; /* Ensure image covers the area */
+  margin-right: 12px;
+  border: 1px solid #ddd; /* Subtle border for images */
+}
+
+.room-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-name {
+  font-weight: bold;
+  color: #333;
+  font-size: 1.05em;
+  white-space: nowrap; /* Prevent name from wrapping */
+  overflow: hidden; /* Hide overflow text */
+  text-overflow: ellipsis; /* Add ellipsis for overflow */
+}
+
+.last-message-time {
+  font-size: 0.85em;
+  color: #888;
+  margin-top: 3px;
+}

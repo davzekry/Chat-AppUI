@@ -8,7 +8,7 @@ import { RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterOutlet],
   template: '<router-outlet></router-outlet>', // This is where your routed components will appear
-  styleUrls: ['./app.scss'],
+  styleUrls: ['./app.css'],
 })
 export class AppComponent {
   title = 'chat-app-frontend';

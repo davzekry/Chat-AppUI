@@ -1,0 +1,25 @@
+<div class="rooms-list-container">
+  <div *ngIf="rooms.length === 0" class="no-rooms-message">
+    No rooms available. Start a chat from the Users list!
+  </div>
+
+  <div
+    *ngFor="let room of rooms"
+    class="room-item"
+    [class.selected]="room.roomId === selectedRoomId"
+    (click)="selectRoom(room)"
+  >
+    <img
+      [src]="getRoomDisplayImage(room)"
+      alt="Room image"
+      class="room-image"
+    />
+    <div class="room-details">
+      <div class="room-name">{{ getRoomDisplayName(room) }}</div>
+      <div *ngIf="room.lastMessageAt" class="last-message-time">
+        {{ room.lastMessageAt | date:'shortTime' }}
+      </div>
+      <!-- Add a placeholder for last message text if needed later -->
+    </div>
+  </div>
+</div>

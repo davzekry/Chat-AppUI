@@ -19,11 +19,11 @@
       />
       <div class="message-content-wrapper">
         <div class="message-sender-name" *ngIf="!isMyMessage(message)">
-          {{ message.senderUserName }}
+          {{ message.userName }}
         </div>
-        <div class="message-bubble">{{ message.content }}</div>
+        <div class="message-bubble">{{ message.userName }}</div>
         <div class="message-timestamp">
-          {{ message.timestamp | date: 'shortTime' }}
+          {{ message.createdAt| date: 'shortTime' }}
         </div>
       </div>
       <img

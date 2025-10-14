@@ -1,0 +1,23 @@
+<div class="users-list-container">
+  <div *ngIf="users.length === 0" class="no-users-message">
+    No other users found.
+  </div>
+
+  <div
+    *ngFor="let user of users"
+    class="user-item"
+    (click)="selectUser(user)"
+  >
+    <img
+      [src]="getUserDisplayImage(user)"
+      alt="{{ user.name }}'s profile image"
+      class="user-image"
+    />
+    <div class="user-details">
+      <div class="user-name">{{ user.name }}</div>
+      <div class="user-status" [class.online]="user.isOnline">
+        {{ user.isOnline ? 'Online' : 'Offline' }}
+      </div>
+    </div>
+  </div>
+</div>

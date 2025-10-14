@@ -12,8 +12,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, Message } from '../../services/chat.service';
-import { AuthService } from '../../services/auth.service';
+import { ChatService, Message } from '../../../services/chat.service';
+import { AuthService } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -21,7 +21,7 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './messages.component.html',
-  styleUrls: ['./messages.component.scss'],
+  styleUrls: ['./messages.component.css'],
 })
 export class MessagesComponent implements OnChanges, OnInit, OnDestroy {
   @Input() roomId: string | null = null;
@@ -46,8 +46,7 @@ export class MessagesComponent implements OnChanges, OnInit, OnDestroy {
           return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
       const payload = JSON.parse(jsonPayload);
-      this.currentUserId = payload.http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier || null; // Adjust claim name
-    }
+      this.currentUserId = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || null;    }
 
     // Subscribe to new real-time messages
     this.chatService.newMessages$
@@ -77,7 +76,7 @@ export class MessagesComponent implements OnChanges, OnInit, OnDestroy {
     this.chatService.getRoomMessages(roomId).subscribe({
       next: (response) => {
         if (response.status === 200 && response.data) {
-          this.messages = response.data;
+          this.messages = response.data.data;
           console.log(`Messages for room ${roomId} loaded:`, this.messages);
           this.scrollToBottom();
         } else {
@@ -117,10 +116,10 @@ export class MessagesComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   isMyMessage(message: Message): boolean {
-    return message.senderId === this.currentUserId;
+  return message.userId === this.currentUserId; // `senderId` is not in your Message interface
   }
 
   getMessageImage(message: Message): string {
-    return message.senderUserImage || 'https://via.placeholder.com/30?text=U';
+    return message.userProfileImage || 'https://via.placeholder.com/30?text=U';
   }
 }

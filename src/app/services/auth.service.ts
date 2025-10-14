@@ -1,26 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { CustomeResponse } from '../../app/interfaces/chat.interface'; // Use the central interface
 
-// Interfaces for response DTOs
+// Specific auth interfaces (can be moved to auth.interfaces.ts if preferred)
 export interface LoginResponseData {
   expireDate: string;
   token: string;
 }
-
-export interface CustomeResponse<T> {
-  data: T;
-  message: string | null;
-  internalMessage: string | null;
-  status: number;
-}
-
 export interface LoginRequest {
   email?: string;
   password?: string;
 }
-
 export interface RegisterRequest {
   userName?: string;
   email?: string;
@@ -32,13 +25,21 @@ export interface RegisterRequest {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://dchatapp.runasp.net/api/Auth'; // Your base API URL
+  private apiUrl = 'https://dchatapp.runasp.net/api/Auth';
   private authTokenSubject = new BehaviorSubject<string | null>(null);
-  public authToken$ = this.authTokenSubject.asObservable(); // Expose as observable
+  public authToken$ = this.authTokenSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
-    // Load token from localStorage on service initialization
-    this.loadToken();
+  private isBrowser: boolean;
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.loadToken();
+    }
   }
 
   private loadToken() {
@@ -49,39 +50,45 @@ export class AuthService {
   }
 
   getToken(): string | null {
+    if (!this.isBrowser) {
+      return null;
+    }
     return this.authTokenSubject.value;
   }
 
   isLoggedIn(): boolean {
+    if (!this.isBrowser) {
+      return false;
+    }
     const token = this.getToken();
-    // Basic check: token exists and is not expired (you'd typically decode it for expiration)
     return !!token && !this.isTokenExpired(token);
   }
 
   private isTokenExpired(token: string): boolean {
-    // Implement actual token expiration check here.
-    // For now, a simple placeholder.
-    // You would parse the JWT token and check the 'exp' claim.
-    // Example using jwt-decode (install with npm install jwt-decode):
+    if (!this.isBrowser) {
+      return true;
+    }
     try {
       const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
       if (decodedToken && decodedToken.exp) {
-        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+        const expirationTime = decodedToken.exp * 1000;
         return Date.now() >= expirationTime;
       }
     } catch (error) {
       console.error('Error decoding token:', error);
+      return true;
     }
-    return true; // Assume expired if decoding fails or exp not found
+    return true;
   }
-
 
   login(credentials: LoginRequest): Observable<CustomeResponse<LoginResponseData>> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<CustomeResponse<LoginResponseData>>(`${this.apiUrl}/Login`, credentials, { headers }).pipe(
       tap(response => {
         if (response.status === 200 && response.data?.token) {
-          localStorage.setItem('jwt_token', response.data.token);
+          if (this.isBrowser) {
+            localStorage.setItem('jwt_token', response.data.token);
+          }
           this.authTokenSubject.next(response.data.token);
           console.log('Login successful, token stored.');
         } else {
@@ -92,7 +99,6 @@ export class AuthService {
   }
 
   register(formData: FormData): Observable<CustomeResponse<boolean>> {
-    // No 'Content-Type' header needed for FormData; HttpClient sets it automatically
     return this.http.post<CustomeResponse<boolean>>(`${this.apiUrl}/Register`, formData);
   }
 
@@ -102,11 +108,59 @@ export class AuthService {
     });
     return this.http.post<CustomeResponse<boolean>>(`${this.apiUrl}/Logout`, {}, { headers }).pipe(
       tap(() => {
-        localStorage.removeItem('jwt_token');
+        if (this.isBrowser) {
+          localStorage.removeItem('jwt_token');
+        }
         this.authTokenSubject.next(null);
-        this.router.navigate(['/login']); // Redirect to login after logout
+        this.router.navigate(['/login']);
         console.log('Logged out successfully.');
       })
     );
+  }
+
+  getCurrentUserId(): string | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+    const token = this.getToken();
+    if (token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const payload = JSON.parse(jsonPayload);
+        // Corrected property access with bracket notation
+        return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || null;
+      } catch (e) {
+        console.error('Failed to decode token for user ID:', e);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  getCurrentUserName(): string | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+    const token = this.getToken();
+    if (token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const payload = JSON.parse(jsonPayload);
+        // Corrected property access with bracket notation
+        return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || null;
+      } catch (e) {
+        console.error('Failed to decode token for user name:', e);
+        return null;
+      }
+    }
+    return null;
   }
 }
