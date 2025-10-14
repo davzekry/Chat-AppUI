@@ -1,6 +1,0 @@
-<div #messagesContainer class="messages-container">
-  <div *ngFor="let message of messages" class="message-item" [class.sent]="message.userId === currentUserId" [class.received]="message.userId !== currentUserId">
-    <p class="message-text">{{ message.messageText }}</p>
-    <span class="message-time">{{ message.createdAt | date: 'shortTime' }}</span>
-  </div>
-</div>
