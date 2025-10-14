@@ -10,8 +10,8 @@ import { takeUntil } from 'rxjs/operators';
   selector: 'app-messages',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: '../messages/messages.component.html',
-  styleUrls: ['../messages/messages.component.css']
+  templateUrl: './messages-list.component.html',
+  styleUrls: ['./messages-list.component.css']
 })
 export class MessagesComponent implements OnChanges, OnDestroy, AfterViewChecked {
   @Input() roomId: string | null = null;

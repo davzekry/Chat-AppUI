@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomsListComponent } from './rooms-list/rooms-list.component';
 import { UsersListComponent } from './users-list/users-list.component';
-import { MessagesListComponent } from './messages-list/messages-list.component';
+import { MessagesComponent } from './messages-list/messages-list.component';
 import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../services/auth.service';
 import { Room, User } from '../../interfaces/chat.interface';
@@ -11,7 +11,7 @@ import { Room, User } from '../../interfaces/chat.interface';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RoomsListComponent, UsersListComponent, MessagesListComponent],
+  imports: [CommonModule, FormsModule, RoomsListComponent, UsersListComponent, MessagesComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
