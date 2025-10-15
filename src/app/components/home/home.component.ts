@@ -10,12 +10,13 @@ import { AuthService } from '../../services/auth.service'; // Import AuthService
 import { Room, PaginatedUsers, MessageHistory, Message, CreateRoomResponse, User } from '../../models/chat.models';
 import { SignalrService } from '../../services/signalr.service'; // Import SignalrService
 import { Subscription } from 'rxjs';
+import { RoomListComponent } from "./rooms-list/rooms-list.component";
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, HttpClientModule, FormsModule, RoomListComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })

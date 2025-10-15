@@ -4,20 +4,19 @@
     <div class="sidebar-header">
       <h3>Rooms</h3>
     </div>
-    <div class="sidebar-content">
-      <!-- Add click event to select a room -->
-      <div
-        class="room-item"
-        *ngFor="let room of rooms$ | async"
-        (click)="selectRoom(room)"
-        [class.active]="room.roomId === selectedRoom?.roomId"
-      >
-        <div class="room-details">
-          <span class="room-name">{{ room.roomName || 'Private Chat' }}</span>
-          <span class="room-timestamp">{{ room.lastMessageAt | date : 'shortTime' }}</span>
-        </div>
-      </div>
-    </div>
+    <!-- 
+      USE THE NEW COMPONENT HERE 
+      - Pass the rooms data down using [rooms]
+      - Pass the selected room ID down using [selectedRoomId]
+      - Listen for the selection event with (roomSelected)
+    -->
+    <!-- THIS IS THE CORRECTED CODE -->
+    <app-room-list
+      [rooms]="rooms$ | async"
+      [selectedRoomId]="selectedRoom?.roomId ?? null"
+    >
+      (roomSelected)="selectRoom($event)">
+    </app-room-list>
   </aside>
 
   <!-- Main Chat Area -->

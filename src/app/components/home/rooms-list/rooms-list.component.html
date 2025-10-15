@@ -1,8 +1,12 @@
-<div class="rooms-container">
-  <div *ngFor="let room of rooms" 
-       class="room-item" 
-       [class.selected]="room.roomId === selectedRoomId" 
-       (click)="selectRoom(room)">
-    {{ room.roomName || 'Private Chat' }}
+<div class="sidebar-content">
+  <div 
+    class="room-item" 
+    *ngFor="let room of rooms" 
+    (click)="onRoomClick(room)"
+    [class.active]="room.roomId === selectedRoomId">
+    <div class="room-details">
+      <span class="room-name">{{ room.roomName || 'Private Chat' }}</span>
+      <span class="room-timestamp">{{ room.lastMessageAt | date:'shortTime' }}</span>
+    </div>
   </div>
 </div>
