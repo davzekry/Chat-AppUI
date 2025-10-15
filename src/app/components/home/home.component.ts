@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core'; // REMOVED: ViewChild, ElementRef, AfterViewChecked
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Observable, of, BehaviorSubject, Subscription } from 'rxjs';
@@ -8,12 +8,12 @@ import { FormsModule } from '@angular/forms';
 // Import our services and models
 import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../services/auth.service';
-import { Room, PaginatedUsers, MessageHistory, Message, CreateRoomResponse, User } from '../../models/chat.models';
+import { Room, PaginatedUsers, Message, CreateRoomResponse, User } from '../../models/chat.models';
 import { SignalrService } from '../../services/signalr.service';
 
 // Import Child Components
-import { RoomListComponent } from "./rooms-list/rooms-list.component";
-import { UsersListComponent } from "./users-list/users-list.component";
+import { RoomListComponent } from './rooms-list/rooms-list.component';
+import { UsersListComponent } from './users-list/users-list.component';
 import { MessageListComponent } from './messages-list/messages-list.component';
 import { MessageInputComponent } from './message-input/message-input.component';
 
@@ -27,29 +27,26 @@ import { MessageInputComponent } from './message-input/message-input.component';
     RoomListComponent,
     UsersListComponent,
     MessageListComponent,
-    MessageInputComponent
+    MessageInputComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-} )
-// REMOVED: AfterViewChecked from implements list
+})
 export class HomeComponent implements OnInit, OnDestroy {
-  // REMOVED: @ViewChild('messageArea')
-
   public rooms$!: Observable<Room[]>;
   public users$ = new BehaviorSubject<PaginatedUsers | null>(null);
   public selectedRoom: Room | null = null;
   public currentUserId: string | null = null;
   public messages: Message[] = [];
-  
+
   private messageSubscription!: Subscription;
-  
-  // REMOVED: shouldScrollToBottom property
 
   constructor(
     private chatService: ChatService,
     private authService: AuthService,
-    public signalrService: SignalrService
+    public signalrService: SignalrService,
+    private cdr: ChangeDetectorRef // <-- 2. INJECT ChangeDetectorRef
+
   ) {}
 
   ngOnInit(): void {
@@ -57,21 +54,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadInitialData();
     this.signalrService.startConnection();
 
-    this.messageSubscription = this.signalrService.messageReceived$.subscribe((realMessage: Message) => {
-      const tempMessageIndex = this.messages.findIndex(
-        m => m.status === 'sending' && m.displayContent === realMessage.displayContent
-      );
+    this.messageSubscription = this.signalrService.messageReceived$.subscribe(
+      (realMessage: Message) => {
+        const tempMessageIndex = this.messages.findIndex(
+          (m) => m.id === realMessage.tempId
+        );
 
-      if (tempMessageIndex !== -1) {
-        this.messages[tempMessageIndex] = realMessage;
-      } else if (this.selectedRoom && realMessage.roomId === this.selectedRoom.roomId) {
-        this.messages.push(realMessage);
+        if (tempMessageIndex !== -1) {
+          this.messages = this.messages.map((msg, index) =>
+            index === tempMessageIndex ? realMessage : msg
+          );
+        } else if (
+          this.selectedRoom &&
+          realMessage.roomId === this.selectedRoom.roomId
+        ) {
+          this.messages = [...this.messages, realMessage];
+        }
+
+        // --- 3. THE FINAL FIX ---
+        // Manually tell Angular to run change detection
+        this.cdr.detectChanges();
       }
-      // REMOVED: this.shouldScrollToBottom = true;
-    });
+    );
   }
-
-  // REMOVED: ngAfterViewChecked() method
 
   ngOnDestroy(): void {
     if (this.messageSubscription) {
@@ -81,14 +86,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadInitialData(): void {
-    this.rooms$ = this.chatService.getRooms(); // Simplified this line
+    this.rooms$ = this.chatService.getRooms();
 
-    this.chatService.getUsers().pipe(
-      catchError((error) => {
-        console.error('Error fetching users:', error);
-        return of(null);
-      })
-    ).subscribe(users => this.users$.next(users));
+    this.chatService
+      .getUsers()
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching users:', error);
+          return of(null);
+        })
+      )
+      .subscribe((users) => this.users$.next(users));
   }
 
   selectRoom(room: Room): void {
@@ -97,7 +105,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.chatService.getMessages(room.roomId).subscribe((history) => {
       this.messages = history.messages;
-      // REMOVED: this.shouldScrollToBottom = true;
     });
   }
 
@@ -108,8 +115,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.chatService.createPrivateRoom(userToChatWith.id).subscribe({
       next: (response: CreateRoomResponse) => {
-        console.log('Accessed private room, ID:', response.roomId);
-
         const newRoomForSelection: Room = {
           roomId: response.roomId,
           roomName: userToChatWith.name,
@@ -131,8 +136,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     const roomId = this.selectedRoom.roomId;
-
     const tempId = `temp_${Date.now()}`;
+
     const optimisticMessage: Message = {
       id: tempId,
       roomId: roomId,
@@ -149,23 +154,31 @@ export class HomeComponent implements OnInit, OnDestroy {
       voiceMessage: null,
     };
 
-    this.messages.push(optimisticMessage);
+    // Use immutable update for the optimistic message
+    this.messages = [...this.messages, optimisticMessage];
 
-    this.chatService.sendMessage(roomId, messageText).subscribe({
+    // Call the service and PASS THE TEMP ID
+    this.chatService.sendMessage(roomId, tempId, messageText).subscribe({
       next: (success) => {
         if (!success) {
-          const msg = this.messages.find(m => m.id === tempId);
-          if (msg) msg.status = 'failed';
+          this.updateMessageStatus(tempId, 'failed');
         }
       },
       error: (err) => {
         console.error('Failed to send message:', err);
-        const msg = this.messages.find(m => m.id === tempId);
-        if (msg) msg.status = 'failed';
+        this.updateMessageStatus(tempId, 'failed');
       },
     });
   }
 
-  // REMOVED: scrollToBottom() method
-  // REMOVED: isMessageSent() method (this logic is now in MessageListComponent)
+  // Helper function to immutably update a message's status
+  private updateMessageStatus(tempId: string, status: 'failed') {
+    const msgIndex = this.messages.findIndex((m) => m.id === tempId);
+    if (msgIndex !== -1) {
+      const updatedMessage = { ...this.messages[msgIndex], status: status };
+      this.messages = this.messages.map((msg, index) =>
+        index === msgIndex ? updatedMessage : msg
+      );
+    }
+  }
 }

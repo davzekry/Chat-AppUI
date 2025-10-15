@@ -45,6 +45,7 @@ export interface FileMessage {
 export interface Message {
   id: string;
   roomId?: string;
+  tempId?: string;
   userId: string;
   userName: string;
   userProfileImage: string;

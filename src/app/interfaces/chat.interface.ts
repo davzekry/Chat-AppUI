@@ -15,7 +15,8 @@ export interface Room {
   imagePath: string | null; // Can be null for private chats
   roomType: 0 | 1; // 0: Private, 1: Group
   lastMessageAt?: string; // Date string
-  otherParticipant?: { // Assuming backend might add this eventually
+  otherParticipant?: {
+    // Assuming backend might add this eventually
     userId: string;
     userName: string;
     userImage: string;
@@ -53,7 +54,7 @@ export interface Message {
   userName: string; // Sender's name
   userProfileImage?: string; // Sender's image
   messageText: string;
-  messageType: 0 | 1 | 2; // 0: Text, 1: File, 2: Audio
+  messageType: 0 | 1 | 2 | string; // 0: Text, 1: File, 2: Audio
   isEdited: boolean;
   createdAt: string; // Date string
   fileMessage?: FileMessage;
