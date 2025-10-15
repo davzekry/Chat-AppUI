@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
@@ -12,7 +12,7 @@ export class SignalrService {
   // Use a Subject to broadcast received messages to any component that subscribes
   public messageReceived$ = new Subject<Message>();
 
-  constructor() {}
+  constructor(private ngZone: NgZone) {}
 
   public startConnection(): void {
     const token = localStorage.getItem('jwt_token'); // Get the auth token
@@ -54,9 +54,12 @@ export class SignalrService {
   // Listen for the "ReceiveMessage" event from the server
   private addReceiveMessageListener(): void {
     this.hubConnection.on('ReceiveMessage', (message: Message) => {
-      console.log('Message received from SignalR:', message);
-      // When a message is received, push it to our Subject
-      this.messageReceived$.next(message);
+      // THIS IS THE CRUCIAL FIX
+      // We wrap the .next() call inside ngZone.run()
+      this.ngZone.run(() => {
+        console.log('Message received from SignalR and running in NgZone:', message);
+        this.messageReceived$.next(message);
+      });
     });
   }
   
