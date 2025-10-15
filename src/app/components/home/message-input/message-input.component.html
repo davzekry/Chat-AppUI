@@ -1,0 +1,19 @@
+<footer class="chat-input-area">
+  <form class="message-form" (ngSubmit)="sendMessage()">
+    <input 
+      type="text" 
+      placeholder="Type your message here..." 
+      class="message-input" 
+      [(ngModel)]="newMessageText"
+      name="messageText"
+      [disabled]="isDisabled"
+      autocomplete="off" />
+    
+    <button 
+      type="submit" 
+      class="send-button" 
+      [disabled]="isDisabled || !newMessageText.trim()">
+      Send
+    </button>
+  </form>
+</footer>

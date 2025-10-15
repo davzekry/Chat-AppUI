@@ -12,12 +12,15 @@ import { SignalrService } from '../../services/signalr.service'; // Import Signa
 import { Subscription } from 'rxjs';
 import { RoomListComponent } from "./rooms-list/rooms-list.component";
 import { UsersListComponent } from "./users-list/users-list.component";
+import { MessageListComponent } from './messages-list/messages-list.component'; // Adjust path
+import { MessageInputComponent } from './message-input/message-input.component'; // Adjust path
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule, RoomListComponent, UsersListComponent],
+  imports: [CommonModule, HttpClientModule, FormsModule, RoomListComponent,
+     UsersListComponent, MessageListComponent, MessageInputComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -145,51 +148,43 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     return message.userId === this.currentUserId;
   }
 
-  sendMessage(): void {
-    if (!this.selectedRoom || !this.newMessageText.trim() || !this.currentUserId) {
+  sendMessage(messageText: string): void {
+    if (!this.selectedRoom || !this.currentUserId) {
       return;
     }
 
     const roomId = this.selectedRoom.roomId;
-    const messageText = this.newMessageText;
 
-    // 1. Create a temporary message
+    // Create optimistic message
     const tempId = `temp_${Date.now()}`;
     const optimisticMessage: Message = {
       id: tempId,
       roomId: roomId,
       userId: this.currentUserId,
-      userName: 'You', // Placeholder
-      userProfileImage: '', // Placeholder
+      userName: 'You',
+      userProfileImage: '',
       messageText: messageText,
       displayContent: messageText,
       createdAt: new Date().toISOString(),
-      status: 'sending', // Set status to 'sending'
-      // Fill other required fields with defaults
+      status: 'sending',
       messageType: 0,
       isEdited: false,
       fileMessage: null,
       voiceMessage: null,
     };
 
-    // 2. Add it to the UI immediately
     this.messages.push(optimisticMessage);
-    this.shouldScrollToBottom = true;
-    this.newMessageText = '';
 
-    // 3. Send the actual message to the service
+    // Call the service
     this.chatService.sendMessage(roomId, messageText).subscribe({
       next: (success) => {
         if (!success) {
-          // If the API call itself fails, mark the message as failed
           const msg = this.messages.find(m => m.id === tempId);
           if (msg) msg.status = 'failed';
         }
-        // We no longer need to do anything on success, as SignalR will handle it.
       },
       error: (err) => {
         console.error('Failed to send message:', err);
-        // Mark the message as failed on network error
         const msg = this.messages.find(m => m.id === tempId);
         if (msg) msg.status = 'failed';
       },

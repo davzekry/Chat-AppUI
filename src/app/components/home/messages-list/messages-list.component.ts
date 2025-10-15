@@ -1,67 +1,37 @@
-import { Component, Input, OnChanges, SimpleChanges, inject, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ChatService } from '../../../services/chat.service';
-import { Message } from '../../../interfaces/chat.interface';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Message } from '../../../models/chat.models'; // Adjust path
 
 @Component({
-  selector: 'app-messages',
+  selector: 'app-message-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule], // For *ngFor, *ngIf, and 'date' pipe
   templateUrl: './messages-list.component.html',
   styleUrls: ['./messages-list.component.css']
 })
-export class MessagesComponent implements OnChanges, OnDestroy, AfterViewChecked {
-  @Input() roomId: string | null = null;
+export class MessageListComponent implements AfterViewChecked {
+  @Input() messages: Message[] = [];
   @Input() currentUserId: string | null = null;
-  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+  
+  @ViewChild('messageArea') private messageArea!: ElementRef;
 
-  private chatService = inject(ChatService);
-  messages: Message[] = [];
-  newMessageText: string = '';
-  private destroy$ = new Subject<void>();
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['roomId'] && this.roomId) {
-      this.loadMessages();
-      this.chatService.newMessage$.pipe(takeUntil(this.destroy$)).subscribe(message => {
-        if (message && message.roomId === this.roomId) {
-          this.messages.push(message);
-        }
-      });
-    }
-  }
-
-  ngAfterViewChecked() {
+  // We scroll whenever the view is checked and there are messages
+  ngAfterViewChecked(): void {
     this.scrollToBottom();
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  loadMessages(): void {
-    if (this.roomId) {
-      this.chatService.getMessages(this.roomId).subscribe(response => {
-        this.messages = response.messages;
-      });
+  isMessageSent(message: Message): boolean {
+    if (!this.currentUserId || !message.userId) {
+      return false;
     }
-  }
-
-  sendMessage(): void {
-    if (this.newMessageText.trim() && this.roomId) {
-      this.chatService.sendMessage(this.roomId, this.newMessageText).subscribe(() => {
-        this.newMessageText = '';
-      });
-    }
+    return message.userId === this.currentUserId;
   }
 
   private scrollToBottom(): void {
     try {
-      this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
-    } catch(err) { }
+      this.messageArea.nativeElement.scrollTop = this.messageArea.nativeElement.scrollHeight;
+    } catch (err) {
+      // It's fine, the element might not be ready yet
+    }
   }
 }
