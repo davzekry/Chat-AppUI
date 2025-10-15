@@ -1,4 +1,4 @@
-<div class="message-area" #messageArea>
+<!-- <div class="message-area" #messageArea>
   <div *ngFor="let msg of messages" class="message-item">
     <div
       class="message"
@@ -14,4 +14,44 @@
       </div>
     </div>
   </div>
+</div> -->
+
+
+<div class="chat-window">
+  
+  <div class="message-area" #messageArea>
+
+  
+    <div *ngFor="let msg of messages" class="message-item">
+
+    
+      <div
+        class="message"
+        [class.sent]="isMessageSent(msg)"
+        [class.received]="!isMessageSent(msg)"
+      >
+      
+        <div class="message-content">
+          
+     
+          <div *ngIf="!isMessageSent(msg)" class="message-sender">{{ msg.userName }}</div>
+          
+         
+          <p class="message-text">{{ msg.displayContent }}</p>
+          
+    
+          <div class="message-meta">
+            <span class="message-time">{{ msg.createdAt | date : 'shortTime' }}</span>
+         
+            <span *ngIf="isMessageSent(msg)" class="message-status">
+              <span *ngIf="msg.status === 'sending'">Sending...</span>
+              <span *ngIf="msg.status === 'failed'" class="failed-status">Failed</span>
+             
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
