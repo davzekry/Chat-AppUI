@@ -72,18 +72,19 @@
     </footer>
   </main>
 
-  <!-- Right Sidebar: Users List -->
+  <!-- ... Right Sidebar: Users List ... -->
   <aside class="sidebar users-list">
     <div class="sidebar-header">
       <h3>Users</h3>
     </div>
     <div class="sidebar-content">
-      <!-- Add click event to create a private room -->
+      <!-- Use the 'data' property from the paginated users observable -->
       <div
         class="user-item"
         *ngFor="let user of (users$ | async)?.data"
-        (click)="createAndSelectPrivateRoom(user.id)"
+        (click)="createAndSelectPrivateRoom(user)"
       >
+        <!-- Pass the whole user object -->
         <div class="user-details">
           <span class="user-name">{{ user.name }}</span>
           <span class="user-status" [class.online]="user.isOnline"></span>

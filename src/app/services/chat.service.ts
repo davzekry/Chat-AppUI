@@ -7,6 +7,7 @@ import {
   Room,
   PaginatedUsers,
   MessageHistory,
+  CreateRoomResponse,
 } from '../models/chat.models';
 
 @Injectable({
@@ -92,12 +93,12 @@ export class ChatService {
   }
 
   // 5. Create a new private room
-  createPrivateRoom(userId: string): Observable<boolean> {
+  createPrivateRoom(userId: string): Observable<CreateRoomResponse> {
     const body = { userId };
     return this.http
-      .post<ApiResponse<boolean>>(`${this.baseUrl}/Room/CreatePrivateRoom`, body, {
+      .post<ApiResponse<CreateRoomResponse>>(`${this.baseUrl}/Room/CreatePrivateRoom`, body, {
         headers: this.getAuthHeaders( ),
       })
-      .pipe(map((response) => response.data));
+      .pipe(map((response) => response.data)); // Extract the CreateRoomResponse object
   }
 }

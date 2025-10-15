@@ -1,15 +1,16 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, BehaviorSubject  } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 // Import our services and models
 import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../services/auth.service'; // Import AuthService
-import { Room, PaginatedUsers, MessageHistory, Message } from '../../models/chat.models';
+import { Room, PaginatedUsers, MessageHistory, Message, CreateRoomResponse, User } from '../../models/chat.models';
 import { SignalrService } from '../../services/signalr.service'; // Import SignalrService
 import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-home',
@@ -22,7 +23,7 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   @ViewChild('messageArea') private messageArea!: ElementRef;
 
   public rooms$!: Observable<Room[]>;
-  public users$!: Observable<PaginatedUsers>;
+  public users$ = new BehaviorSubject<PaginatedUsers | null>(null);
   public messages$!: Observable<MessageHistory>;
   public selectedRoom: Room | null = null;
   public newMessageText: string = '';
@@ -83,28 +84,15 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   }
 
   private loadInitialData(): void {
-    this.rooms$ = this.chatService.getRooms().pipe(
-      catchError((error) => {
-        console.error('Error fetching rooms:', error);
-        return of([]);
-      })
-    );
+    this.rooms$ = this.chatService.getRooms().pipe(/* ... */);
 
-    this.users$ = this.chatService.getUsers().pipe(
+    // Fetch users and update the BehaviorSubject
+    this.chatService.getUsers().pipe(
       catchError((error) => {
         console.error('Error fetching users:', error);
-        return of({
-          data: [],
-          totalCount: 0,
-          pageNumber: 1,
-          pageSize: 10,
-          totalPages: 1,
-          hasNextPage: false,
-          hasPreviousPage: false,
-          items: null,
-        });
+        return of(null);
       })
-    );
+    ).subscribe(users => this.users$.next(users));
   }
 
   selectRoom(room: Room): void {
@@ -119,15 +107,31 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  createAndSelectPrivateRoom(userId: string): void {
-    this.chatService.createPrivateRoom(userId).subscribe({
-      next: (success) => {
-        if (success) {
-          console.log('Private room created. Refreshing room list...');
-          this.rooms$ = this.chatService.getRooms();
-        }
+  createAndSelectPrivateRoom(userToChatWith: User): void {
+    if (userToChatWith.id === this.currentUserId) {
+      return;
+    }
+
+    this.chatService.createPrivateRoom(userToChatWith.id).subscribe({
+      next: (response: CreateRoomResponse) => {
+        console.log('Accessed private room, ID:', response.roomId);
+
+        // Manually construct the Room object for immediate selection
+        const newRoomForSelection: Room = {
+          roomId: response.roomId,
+          roomName: userToChatWith.name, // Use the other user's name
+          imagePath: userToChatWith.imagePath, // Use the other user's image
+          roomType: 0, // Assuming 0 is for private rooms
+          lastMessageAt: response.lastUpdated,
+        };
+
+        // Immediately select the room. The UI will update instantly.
+        this.selectRoom(newRoomForSelection);
+
+        // Refresh the actual room list in the background to stay in sync.
+        this.rooms$ = this.chatService.getRooms();
       },
-      error: (error) => console.error('Error creating private room:', error),
+      error: (error) => console.error('Error creating or accessing private room:', error),
     });
   }
 

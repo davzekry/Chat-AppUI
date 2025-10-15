@@ -63,3 +63,10 @@ export interface MessageHistory {
   totalCount: number;
   hasMore: boolean;
 }
+
+// Update this interface to match the new response
+export interface CreateRoomResponse {
+  roomId: string;
+  memberName: string; // This is the other user's ID
+  lastUpdated: string;
+}

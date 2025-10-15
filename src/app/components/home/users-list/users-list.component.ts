@@ -16,8 +16,8 @@ export class UsersListComponent implements OnInit {
   users: User[] = [];
 
   ngOnInit(): void {
-    this.chatService.getAllUsers().subscribe(response => {
-      this.users = response.data.data;
+    this.chatService.getUsers().subscribe(response => {
+      this.users = response.data;
     });
   }
 
