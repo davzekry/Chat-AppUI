@@ -15,7 +15,7 @@ export class SignalrService {
   constructor() {}
 
   public startConnection(): void {
-    const token = localStorage.getItem('authToken'); // Get the auth token
+    const token = localStorage.getItem('jwt_token'); // Get the auth token
     if (!token) {
       console.error('Auth token not found. Cannot start SignalR connection.');
       return;

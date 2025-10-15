@@ -70,3 +70,20 @@ export interface CreateRoomResponse {
   memberName: string; // This is the other user's ID
   lastUpdated: string;
 }
+
+// This is a simplified version of the User model for the members array
+export interface RoomMember {
+  id: string;
+  name: string;
+  imagePath: string;
+}
+
+export interface Room {
+  roomId: string;
+  roomName: string | null;
+  imagePath: string | null;
+  roomType: number;
+  lastMessageAt: string;
+  members?: RoomMember[]; // <-- ADD THIS OPTIONAL PROPERTY
+}
+

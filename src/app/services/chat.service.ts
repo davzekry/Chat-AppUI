@@ -32,7 +32,26 @@ export class ChatService {
       .get<ApiResponse<Room[]>>(`${this.baseUrl}/Room/GetAllRoomsByUserId`, {
         headers: this.getAuthHeaders( ),
       })
-      .pipe(map((response) => response.data));
+      .pipe(
+        // Use the map operator to transform the data
+        map(response => {
+          // response.data is the array of rooms
+          return response.data.map(room => {
+            // Check if it's a private room and has a member
+            if (room.roomType === 0 && room.members && room.members.length > 0) {
+              const otherMember = room.members[0];
+              // Return a new room object with the details overridden
+              return {
+                ...room, // Copy all original properties
+                roomName: otherMember.name, // Override roomName
+                imagePath: otherMember.imagePath, // Override imagePath
+              };
+            }
+            // If it's a group chat or something else, return it as is
+            return room;
+          });
+        })
+      );
   }
 
   // 2. Get all registered users
