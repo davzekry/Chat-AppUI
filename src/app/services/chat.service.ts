@@ -20,7 +20,7 @@ export class ChatService {
 
   // Helper to get authorization headers
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken'); // Assuming you store the token here
+    const token = localStorage.getItem('jwt_token'); // Assuming you store the token here
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
     });

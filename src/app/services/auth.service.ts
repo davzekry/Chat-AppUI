@@ -120,7 +120,7 @@ export class AuthService {
   }
 
   public getCurrentUserId(): string | null {
-    const token = localStorage.getItem('authToken'); // Or wherever you store it
+    const token = localStorage.getItem('jwt_token'); // Or wherever you store it
     if (!token) {
       return null;
     }
