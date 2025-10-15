@@ -11,12 +11,13 @@ import { Room, PaginatedUsers, MessageHistory, Message, CreateRoomResponse, User
 import { SignalrService } from '../../services/signalr.service'; // Import SignalrService
 import { Subscription } from 'rxjs';
 import { RoomListComponent } from "./rooms-list/rooms-list.component";
+import { UsersListComponent } from "./users-list/users-list.component";
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule, RoomListComponent],
+  imports: [CommonModule, HttpClientModule, FormsModule, RoomListComponent, UsersListComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })

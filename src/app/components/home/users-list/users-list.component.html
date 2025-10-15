@@ -1,5 +1,12 @@
-<div class="users-container">
-  <div *ngFor="let user of users" class="user-item" (click)="selectUser(user)">
-    {{ user.name }}
+<div class="sidebar-content">
+  <!-- Use the 'data' property from the paginated users object -->
+  <div 
+    class="user-item" 
+    *ngFor="let user of users?.data" 
+    (click)="onUserClick(user)">
+    <div class="user-details">
+      <span class="user-name">{{ user.name }}</span>
+      <span class="user-status" [class.online]="user.isOnline"></span>
+    </div>
   </div>
 </div>
