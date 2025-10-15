@@ -1,119 +1,103 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, Subject } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
-import * as signalR from '@microsoft/signalr';
-import {
-  CustomeResponse,
-  Room,
-  User,
-  Message,
-  GetAllUsersResponseData,
-  PaginatedMessages
-} from '../interfaces/chat.interface';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import {
+  ApiResponse,
+  Room,
+  PaginatedUsers,
+  MessageHistory,
+} from '../models/chat.models';
 
 @Injectable({
   providedIn: 'root',
-})
+} )
 export class ChatService {
-  private apiUrl = environment.apiUrl;
-  private signalRUrl = environment.signalRUrl;
-  private authService = inject(AuthService);
-  private http = inject(HttpClient);
+  private readonly baseUrl = 'https://dchatapp.runasp.net/api';
 
-  private hubConnection: signalR.HubConnection | null = null;
-  private newMessageSubject = new Subject<Message>();
-  public newMessage$ = this.newMessageSubject.asObservable();
+  constructor(private http: HttpClient ) {}
 
-  private roomsListRefreshSubject = new BehaviorSubject<boolean>(false);
-  roomsListRefresh$ = this.roomsListRefreshSubject.asObservable();
-
+  // Helper to get authorization headers
   private getAuthHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
-  startConnection(): void {
-    this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(this.signalRUrl, {
-        accessTokenFactory: () => this.authService.getToken() || ''
-      })
-      .build();
-
-    this.hubConnection.start()
-      .then(() => console.log('SignalR Connection started'))
-      .catch(err => console.error('Error while starting SignalR connection: ' + err));
-
-    this.hubConnection.on('ReceiveMessage', (message: Message) => {
-      this.newMessageSubject.next(message);
+    const token = localStorage.getItem('authToken'); // Assuming you store the token here
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
     });
   }
 
-  stopConnection(): void {
-    if (this.hubConnection) {
-      this.hubConnection.stop()
-        .then(() => console.log('SignalR Connection stopped'))
-        .catch(err => console.error('Error while stopping SignalR connection: ' + err));
-    }
+  // 1. Get all rooms for the current user
+  getRooms(): Observable<Room[]> {
+    return this.http
+      .get<ApiResponse<Room[]>>(`${this.baseUrl}/Room/GetAllRoomsByUserId`, {
+        headers: this.getAuthHeaders( ),
+      })
+      .pipe(map((response) => response.data));
   }
 
-  joinRoomGroup(roomId: string): void {
-    if (this.hubConnection) {
-        this.hubConnection.invoke('JoinRoom', roomId)
-            .catch(err => console.error('Error while joining room: ' + err));
-    }
+  // 2. Get all registered users
+  getUsers(pageNumber: number = 1, pageSize: number = 10): Observable<PaginatedUsers> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+
+    return this.http
+      .get<ApiResponse<PaginatedUsers>>(`${this.baseUrl}/AppUser/GetAllUsers`, {
+        headers: this.getAuthHeaders( ),
+        params,
+      })
+      .pipe(map((response) => response.data));
   }
 
-  leaveRoomGroup(roomId: string): void {
-    if (this.hubConnection) {
-        this.hubConnection.invoke('LeaveRoom', roomId)
-            .catch(err => console.error('Error while leaving room: ' + err));
-    }
+  // 3. Get message history for a room
+  getMessages(roomId: string): Observable<MessageHistory> {
+    const params = new HttpParams().set('RoomId', roomId);
+    return this.http
+      .get<ApiResponse<MessageHistory>>(`${this.baseUrl}/Message/GetAllMessagesByRoomId`, {
+        headers: this.getAuthHeaders( ),
+        params,
+      })
+      .pipe(map((response) => response.data));
   }
 
-  sendMessage(roomId: string, messageText: string): Observable<any> {
+  // 4. Send a message
+  sendMessage(
+    roomId: string,
+    messageText: string,
+    messageType: number = 0,
+    file?: File,
+    audioFile?: File
+  ): Observable<boolean> {
+    const params = new HttpParams()
+      .set('RoomId', roomId)
+      .set('MessageText', messageText)
+      .set('MessageType', messageType.toString());
+
     const formData = new FormData();
-    formData.append('RoomId', roomId);
-    formData.append('MessageText', messageText);
-    formData.append('MessageType', '0'); // MessageType for Text
+    if (file) {
+      formData.append('File', file, file.name);
+    }
+    if (audioFile) {
+      formData.append('AudioFile', audioFile, audioFile.name);
+    }
 
-    return this.http.post(`${this.apiUrl}/Message/SendMessage`, formData, { headers: this.getAuthHeaders() });
+    // For multipart/form-data, we let the browser set the Content-Type header
+    const headers = this.getAuthHeaders();
+
+    return this.http
+      .post<ApiResponse<boolean>>(`${this.baseUrl}/Message/SendMessage`, formData, {
+        headers: headers,
+        params: params,
+      } )
+      .pipe(map((response) => response.data));
   }
 
-  getUserRooms(): Observable<CustomeResponse<Room[]>> {
-    return this.http.get<CustomeResponse<Room[]>>(
-      `${this.apiUrl}/Room/GetAllRoomsByUserId`,
-      { headers: this.getAuthHeaders() }
-    );
-  }
-
-  getAllUsers(): Observable<CustomeResponse<GetAllUsersResponseData>> {
-    return this.http.get<CustomeResponse<GetAllUsersResponseData>>(
-      `${this.apiUrl}/AppUser/GetAllUsers`,
-      { headers: this.getAuthHeaders() }
-    );
-  }
-
-  getMessages(roomId: string): Observable<PaginatedMessages> {
-    let params = new HttpParams().set('RoomId', roomId);
-    return this.http.get<CustomeResponse<PaginatedMessages>>(`${this.apiUrl}/Message/GetAllMessagesByRoomId`, { headers: this.getAuthHeaders(), params })
-      .pipe(
-        map(response => response.data)
-      );
-  }
-
-  createPrivateRoom(otherUserId: string): Observable<CustomeResponse<boolean>> {
-    const body = { userId: otherUserId };
-    return this.http.post<CustomeResponse<boolean>>(
-      `${this.apiUrl}/Room/CreatePrivateRoom`,
-      body,
-      { headers: this.getAuthHeaders() }
-    );
-  }
-
-  requestRoomsListRefresh(): void {
-    this.roomsListRefreshSubject.next(true);
+  // 5. Create a new private room
+  createPrivateRoom(userId: string): Observable<boolean> {
+    const body = { userId };
+    return this.http
+      .post<ApiResponse<boolean>>(`${this.baseUrl}/Room/CreatePrivateRoom`, body, {
+        headers: this.getAuthHeaders( ),
+      })
+      .pipe(map((response) => response.data));
   }
 }

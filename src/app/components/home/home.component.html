@@ -1,19 +1,94 @@
-<div class="home-container">
-  <div class="rooms-container">
-    <app-rooms-list [selectedRoomId]="selectedRoom?.roomId ?? null" (roomSelected)="onRoomSelected($event)"></app-rooms-list>
-  </div>
-
-  <div class="chat-container">
-    <div class="messages-container">
-      <app-messages-list [roomId]="selectedRoom?.roomId"></app-messages-list>
+<div class="chat-container">
+  <!-- Left Sidebar: Rooms List -->
+  <aside class="sidebar rooms-list">
+    <div class="sidebar-header">
+      <h3>Rooms</h3>
     </div>
-    <div class="message-input-container">
-      <input type="text" [(ngModel)]="newMessageText" (keyup.enter)="sendMessage()" placeholder="Type a message...">
-      <button (click)="sendMessage()">Send</button>
+    <div class="sidebar-content">
+      <!-- Add click event to select a room -->
+      <div
+        class="room-item"
+        *ngFor="let room of rooms$ | async"
+        (click)="selectRoom(room)"
+        [class.active]="room.roomId === selectedRoom?.roomId"
+      >
+        <div class="room-details">
+          <span class="room-name">{{ room.roomName || 'Private Chat' }}</span>
+          <span class="room-timestamp">{{ room.lastMessageAt | date : 'shortTime' }}</span>
+        </div>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <div class="users-container">
-    <app-users-list (userSelected)="onUserSelected($event)"></app-users-list>
-  </div>
+  <!-- Main Chat Area -->
+  <main class="chat-area">
+    <header class="chat-header">
+      <!-- Show selected room name or a default message -->
+      <h4>{{ selectedRoom?.roomName || 'Select a Room' }}</h4>
+      <span *ngIf="!selectedRoom">Select a room to start messaging.</span>
+    </header>
+
+    <!-- ... -->
+    <div class="message-area" #messageArea>
+      <div *ngFor="let msg of messages" class="message-item">
+        <div
+          class="message"
+          [class.sent]="isMessageSent(msg)"
+          [class.received]="!isMessageSent(msg)"
+          [class.sending]="msg.status === 'sending'"
+        >
+          <!-- ... message content ... -->
+        </div>
+      </div>
+    </div>
+    <!-- ... -->
+
+    <footer class="chat-input-area">
+      <!-- Bind the form's submit event to our sendMessage() method -->
+      <form class="message-form" (ngSubmit)="sendMessage()">
+        <!-- 
+      Use [(ngModel)] for two-way data binding.
+      The input is disabled if no room is selected.
+    -->
+        <input
+          type="text"
+          placeholder="Type your message here..."
+          class="message-input"
+          [(ngModel)]="newMessageText"
+          name="messageText"
+          [disabled]="!selectedRoom"
+          autocomplete="off"
+        />
+
+        <!-- The button is also disabled if no room is selected -->
+        <button
+          type="submit"
+          class="send-button"
+          [disabled]="!selectedRoom || !newMessageText.trim()"
+        >
+          Send
+        </button>
+      </form>
+    </footer>
+  </main>
+
+  <!-- Right Sidebar: Users List -->
+  <aside class="sidebar users-list">
+    <div class="sidebar-header">
+      <h3>Users</h3>
+    </div>
+    <div class="sidebar-content">
+      <!-- Add click event to create a private room -->
+      <div
+        class="user-item"
+        *ngFor="let user of (users$ | async)?.data"
+        (click)="createAndSelectPrivateRoom(user.id)"
+      >
+        <div class="user-details">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="user-status" [class.online]="user.isOnline"></span>
+        </div>
+      </div>
+    </div>
+  </aside>
 </div>

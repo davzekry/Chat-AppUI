@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { CustomeResponse } from '../../app/interfaces/chat.interface'; // Use the central interface
+import { jwtDecode } from 'jwt-decode'; // Correct import for jwt-decode v4+
 
 // Specific auth interfaces (can be moved to auth.interfaces.ts if preferred)
 export interface LoginResponseData {
@@ -118,28 +119,25 @@ export class AuthService {
     );
   }
 
-  getCurrentUserId(): string | null {
-    if (!this.isBrowser) {
+  public getCurrentUserId(): string | null {
+    const token = localStorage.getItem('authToken'); // Or wherever you store it
+    if (!token) {
       return null;
     }
-    const token = this.getToken();
-    if (token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        const payload = JSON.parse(jsonPayload);
-        // Corrected property access with bracket notation
-        return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || null;
-      } catch (e) {
-        console.error('Failed to decode token for user ID:', e);
-        return null;
-      }
+
+    try {
+      // The decoded token will have a structure based on how you created it in .NET
+      // The user ID is often in a claim like 'nameid' or 'sub'
+      const decodedToken: any = jwtDecode(token);
+      const userIdClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
+      
+      return decodedToken[userIdClaim] || null;
+    } catch (error ) {
+      console.error('Error decoding token:', error);
+      return null;
     }
-    return null;
   }
+
 
   getCurrentUserName(): string | null {
     if (!this.isBrowser) {
